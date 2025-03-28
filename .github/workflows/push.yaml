@@ -1,0 +1,39 @@
+name: CI (Push)
+
+on:
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snap:
+    name: Build snap
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-24.04
+          - os: ubuntu-24.04-arm
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup LXD
+        uses: canonical/setup-lxd@v0.1.2
+
+      - name: Setup Snapcraft
+        run: sudo snap install --classic snapcraft
+
+      - name: Build snap
+        run: snapcraft --verbose
+
+      # - name: Release snap
+      #   env:
+      #     SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_SECRET }}
+      #   run: |
+      #     snapcraft upload icloudpd_*.snap --release latest/candidate

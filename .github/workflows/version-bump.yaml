@@ -1,0 +1,39 @@
+name: Update
+
+on:
+  # Runs at 10:00 UTC every day
+  schedule:
+    - cron: "0 10 * * *"
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: Sync version with upstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync Version
+        run: |
+          LATEST=$(curl -sL https://api.github.com/repos/icloud-photos-downloader/icloud_photos_downloader/releases |
+            jq .  | grep tag_name | grep -v beta | grep -v rc | head -n 1 | cut -d'"' -f4 | tr -d 'v'
+          )
+          sed -i 's/^\(version: \).*$/\1'"$LATEST"'/' snap/snapcraft.yaml
+
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No changes detected"
+            exit 0
+          fi
+
+          git config --global user.name "Github Actions"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore: bump icloudpd to version ${LATEST}"
+          git push
