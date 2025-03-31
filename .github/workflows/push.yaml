@@ -32,8 +32,8 @@ jobs:
       - name: Build snap
         run: snapcraft --verbose
 
-      # - name: Release snap
-      #   env:
-      #     SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_SECRET }}
-      #   run: |
-      #     snapcraft upload icloudpd_*.snap --release latest/candidate
+      - name: Release snap
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_SECRET }}
+        run: |
+          snapcraft upload icloudpd_*.snap --release latest/candidate
