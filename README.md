@@ -13,6 +13,7 @@ The upstream documentation can be found [here](https://icloud-photos-downloader.
 
 ```bash
 snap install icloudpd
+sudo snap connect icloudpd:shmem
 # Optionally connect the removable-media interface
 sudo snap connect icloudpd:removable-media
 ```

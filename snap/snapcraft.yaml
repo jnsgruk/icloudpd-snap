@@ -39,6 +39,7 @@ apps:
       - network
       - network-bind
       - removable-media
+      - shmem
 
 parts:
   icloudpd:
@@ -46,3 +47,8 @@ parts:
     source: https://github.com/icloud-photos-downloader/icloud_photos_downloader
     source-tag: v$SNAPCRAFT_PROJECT_VERSION
     source-type: git
+
+plugs:
+  shmem:
+    interface: shared-memory
+    private: true
