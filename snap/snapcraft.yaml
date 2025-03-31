@@ -1,7 +1,7 @@
 name: icloudpd
 title: iCloud Photo Downloader
 license: MIT
-version: 1.27.1
+version: 1.27.2
 base: core24
 summary: A command-line tool to download photos from iCloud
 description: |
