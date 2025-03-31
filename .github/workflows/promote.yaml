@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Promote snap to stable
         env:
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_TOKEN }}
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_TOKEN }}
         run: |
           sudo snap install --classic snapcraft
           snapcraft promote icloudpd --from-channel latest/candidate --to-channel latest/stable --yes

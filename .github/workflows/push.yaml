@@ -34,6 +34,6 @@ jobs:
 
       - name: Release snap
         env:
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_SECRET }}
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_TOKEN }}
         run: |
           snapcraft upload icloudpd_*.snap --release latest/candidate
