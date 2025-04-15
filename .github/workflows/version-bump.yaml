@@ -19,7 +19,7 @@ jobs:
       - name: Checkout the source
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PUSH_TOKEN }}
 
       - name: Sync Version
         run: |
