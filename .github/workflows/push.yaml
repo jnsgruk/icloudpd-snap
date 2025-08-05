@@ -37,3 +37,36 @@ jobs:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_TOKEN }}
         run: |
           snapcraft upload icloudpd_*.snap --release latest/candidate
+
+  notify:
+    name: Call for testing
+    needs: [snap]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Open promotion prompt
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="$(yq '.version' snap/snapcraft.yaml)"
+          gh issue create \
+            --title "Call for testing: icloudpd \`$VERSION\` on \`latest/candidate\`" \
+            --body "The \`icloudpd\` snap was updated automatically to version \`$VERSION\` and released to the \`latest/candidate\` channel, and now needs testing for promotion to \`latest/stable\`.
+
+          If you already have the snap installed, you can test the snap by running:
+
+              sudo snap refresh icloudpd --channel latest/candidate
+
+          Or you can install the snap with:
+
+              sudo snap install icloudpd --channel latest/candidate
+
+          As the maintainer of the snap, you can effect the promotion at the CLI with the command below, or by dispatching the [promotion workflow](https://github.com/jnsgruk/icloudpd-snap/actions/workflows/promote.yaml):
+
+              snapcraft promote icloudpd --from-channel latest/candidate --to-channel latest/stable --yes
+
+          "
