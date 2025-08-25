@@ -35,16 +35,16 @@ jobs:
         run: |
           if [[ -z "$(git status --porcelain)" ]]; then
             echo "No changes detected"
-            echo "updated=true" >> $GITHUB_OUTPUT
+            echo "updated=false" >> $GITHUB_OUTPUT
           fi
-          echo "updated=false" >> $GITHUB_OUTPUT
+          echo "updated=true" >> $GITHUB_OUTPUT
 
       - name: Setup LXD
-        if: ${{ steps.changes.outputs.test == 'true' }}
+        if: ${{ steps.changes.outputs.updated == 'true' }}
         uses: canonical/setup-lxd@v0.1.2
 
       - name: Ensure snap builds
-        if: ${{ steps.changes.outputs.test == 'true' }}
+        if: ${{ steps.changes.outputs.updated == 'true' }}
         run: |
           sudo snap install --classic snapcraft
           snapcraft --verbose
@@ -57,7 +57,7 @@ jobs:
           gh issue create --title "Auto-update to version \`${{ steps.version.outputs.version }}\` failed" --body "Attempted to update snap automatically, but build failed. See: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} for details."
 
       - name: Commit changes
-        if: ${{ steps.changes.outputs.test == 'true' }}
+        if: ${{ steps.changes.outputs.updated == 'true' }}
         run: |
           git config --global user.name "Github Actions"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
