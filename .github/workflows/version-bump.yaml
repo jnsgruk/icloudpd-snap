@@ -28,7 +28,7 @@ jobs:
             jq .  | grep tag_name | head -n 1 | cut -d'"' -f4 | tr -d 'v'
           )
           sed -i 's/^\(version: \).*$/\1'"$LATEST"'/' snap/snapcraft.yaml
-          echo "version=$(LATEST)" >> $GITHUB_OUTPUT
+          echo "version=$LATEST" >> $GITHUB_OUTPUT
 
       - name: Detect changes
         id: changes
