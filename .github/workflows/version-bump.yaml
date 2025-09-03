@@ -36,8 +36,9 @@ jobs:
           if [[ -z "$(git status --porcelain)" ]]; then
             echo "No changes detected"
             echo "updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "updated=true" >> $GITHUB_OUTPUT
           fi
-          echo "updated=true" >> $GITHUB_OUTPUT
 
       - name: Setup LXD
         if: ${{ steps.changes.outputs.updated == 'true' }}
@@ -49,13 +50,6 @@ jobs:
           sudo snap install --classic snapcraft
           snapcraft --verbose
 
-      - name: Open issue if failed
-        if: failure()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh issue create --title "Auto-update to version \`${{ steps.version.outputs.version }}\` failed" --body "Attempted to update snap automatically, but build failed. See: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} for details."
-
       - name: Commit changes
         if: ${{ steps.changes.outputs.updated == 'true' }}
         run: |
@@ -63,3 +57,10 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -am "chore: bump icloudpd to version ${{ steps.version.outputs.version }}"
           git push
+
+      - name: Open issue if failed
+        if: ${{ failure() && steps.changes.outputs.updated == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create --title "Auto-update to version \`${{ steps.version.outputs.version }}\` failed" --body "Attempted to update snap automatically, but build failed. See: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} for details."
