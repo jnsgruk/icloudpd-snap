@@ -42,7 +42,7 @@ jobs:
 
       - name: Setup LXD
         if: ${{ steps.changes.outputs.updated == 'true' }}
-        uses: canonical/setup-lxd@v0.1.3
+        uses: canonical/setup-lxd@v1
 
       - name: Ensure snap builds
         if: ${{ steps.changes.outputs.updated == 'true' }}
