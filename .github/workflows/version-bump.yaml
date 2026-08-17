@@ -23,12 +23,22 @@ jobs:
 
       - name: Sync Version
         id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          LATEST=$(curl -sL https://api.github.com/repos/icloud-photos-downloader/icloud_photos_downloader/releases |
-            jq .  | grep tag_name | head -n 1 | cut -d'"' -f4 | tr -d 'v'
-          )
-          sed -i 's/^\(version: \).*$/\1'"$LATEST"'/' snap/snapcraft.yaml
-          echo "version=$LATEST" >> $GITHUB_OUTPUT
+          set -euo pipefail
+
+          LATEST=$(gh api repos/icloud-photos-downloader/icloud_photos_downloader/releases/latest \
+            --jq '.tag_name')
+          LATEST=${LATEST#v}
+
+          if [[ ! "$LATEST" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Invalid upstream release version: '$LATEST'"
+            exit 1
+          fi
+
+          sed -i "s/^version: .*/version: $LATEST/" snap/snapcraft.yaml
+          echo "version=$LATEST" >> "$GITHUB_OUTPUT"
 
       - name: Detect changes
         id: changes
@@ -48,7 +58,7 @@ jobs:
         if: ${{ steps.changes.outputs.updated == 'true' }}
         run: |
           sudo snap install --classic snapcraft
-          snapcraft --verbose
+          snapcraft pack --verbose
 
       - name: Commit changes
         if: ${{ steps.changes.outputs.updated == 'true' }}
@@ -59,8 +69,15 @@ jobs:
           git push
 
       - name: Open issue if failed
-        if: ${{ failure() && steps.changes.outputs.updated == 'true' }}
+        if: ${{ failure() }}
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh issue create --title "Auto-update to version \`${{ steps.version.outputs.version }}\` failed" --body "Attempted to update snap automatically, but build failed. See: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} for details."
+          if [[ -n "$VERSION" ]]; then
+            title="Auto-update to version \`$VERSION\` failed"
+          else
+            title="Automatic version update failed"
+          fi
+
+          gh issue create --title "$title" --body "The automatic update workflow failed. See: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} for details."
